@@ -1,0 +1,11 @@
+# Ansible
+*.retry
+.vault_pass
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Secrets
+group_vars/*vault*
+
