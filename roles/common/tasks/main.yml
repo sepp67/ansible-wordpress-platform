@@ -1,0 +1,28 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base packages
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - git
+      - unzip
+      - vim
+      - sudo
+      - qemu-guest-agent
+    state: present
+
+- name: Ensure qemu guest agent is running
+  service:
+    name: qemu-guest-agent
+    state: started
+    enabled: true
+
+- name: Set timezone to Europe/Paris
+  timezone:
+    name: Europe/Paris

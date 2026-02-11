@@ -1,0 +1,10 @@
+---
+- name: Bootstrap Debian hosts
+  hosts: all
+  become: true
+
+  roles:
+    - common
+    - ssh_hardening
+    - firewall
+

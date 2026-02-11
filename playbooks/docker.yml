@@ -1,0 +1,7 @@
+---
+- name: Install Docker on web hosts
+  hosts: wp
+  become: true
+
+  roles:
+    - docker
