@@ -1,0 +1,11 @@
+{% if wordpress_sites is defined and wordpress_sites|length > 0 %}
+{% for s in wordpress_sites %}
+{{ s.domain }} {
+  reverse_proxy wp_{{ s.name }}:80
+}
+{% endfor %}
+{% else %}
+:80 {
+  respond "Caddy is running"
+}
+{% endif %}
