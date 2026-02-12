@@ -1,0 +1,26 @@
+---
+- name: Ensure base directory exists
+  file:
+    path: /opt/wordpress
+    state: directory
+    mode: "0755"
+
+- name: Create site directories
+  file:
+    path: "/opt/wordpress/{{ item.name }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ wordpress_sites }}"
+
+- name: Render docker-compose for each site
+  template:
+    src: docker-compose.yml.j2
+    dest: "/opt/wordpress/{{ item.name }}/docker-compose.yml"
+    mode: "0644"
+  loop: "{{ wordpress_sites }}"
+
+- name: Start each WordPress stack
+  command: docker compose up -d
+  args:
+    chdir: "/opt/wordpress/{{ item.name }}"
+  loop: "{{ wordpress_sites }}"

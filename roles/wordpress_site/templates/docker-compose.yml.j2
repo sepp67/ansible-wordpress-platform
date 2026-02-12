@@ -1,0 +1,38 @@
+services:
+  db_{{ item.name }}:
+    image: mariadb:11
+    container_name: db_{{ item.name }}
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: "{{ item.db_name }}"
+      MARIADB_USER: "{{ item.db_user }}"
+      MARIADB_PASSWORD: "{{ item.db_password }}"
+      MARIADB_ROOT_PASSWORD: "{{ item.db_root_password }}"
+    volumes:
+      - db_{{ item.name }}:/var/lib/mysql
+    networks:
+      - web
+
+  wp_{{ item.name }}:
+    image: wordpress:6-php8.3-apache
+    container_name: wp_{{ item.name }}
+    restart: unless-stopped
+    environment:
+      WORDPRESS_DB_HOST: "db_{{ item.name }}:3306"
+      WORDPRESS_DB_NAME: "{{ item.db_name }}"
+      WORDPRESS_DB_USER: "{{ item.db_user }}"
+      WORDPRESS_DB_PASSWORD: "{{ item.db_password }}"
+    volumes:
+      - wp_{{ item.name }}:/var/www/html
+    depends_on:
+      - db_{{ item.name }}
+    networks:
+      - web
+
+volumes:
+  db_{{ item.name }}:
+  wp_{{ item.name }}:
+
+networks:
+  web:
+    external: true

@@ -5,17 +5,27 @@
     state: directory
     mode: "0755"
 
-- name: Create Caddyfile
-  copy:
+- name: Ensure shared docker network 'web' exists
+  command: docker network inspect web
+  register: webnet
+  failed_when: false
+  changed_when: false
+
+- name: Create shared docker network 'web' if missing
+  command: docker network create web
+  when: webnet.rc != 0
+
+- name: Render Caddyfile
+  template:
+    src: Caddyfile.j2
     dest: /opt/caddy/Caddyfile
-    content: |
-      :80 {
-          respond "Caddy is running"
-      }
+    mode: "0644"
+  notify: Reload Caddy
 
 - name: Create docker-compose.yml for Caddy
   copy:
     dest: /opt/caddy/docker-compose.yml
+    mode: "0644"
     content: |
       services:
         caddy:
@@ -25,8 +35,10 @@
           ports:
             - "80:80"
             - "443:443"
+          networks:
+            - web
           volumes:
-            - ./Caddyfile:/etc/caddy/Caddyfile
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
             - caddy_data:/data
             - caddy_config:/config
 
@@ -34,7 +46,11 @@
         caddy_data:
         caddy_config:
 
-- name: Start Caddy container
+      networks:
+        web:
+          external: true
+
+- name: Start/Update Caddy container
   command: docker compose up -d
   args:
     chdir: /opt/caddy

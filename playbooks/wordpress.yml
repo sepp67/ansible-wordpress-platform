@@ -1,0 +1,7 @@
+---
+- name: Deploy WordPress sites and configure Caddy routing
+  hosts: wp
+  become: true
+  roles:
+    - wordpress_site
+    - caddy
