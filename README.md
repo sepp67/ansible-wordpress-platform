@@ -1,21 +1,7 @@
-ansible-wordpress-platform/
-├── inventories/
-│   ├── prod/
-│   │   ├── hosts.ini
-│   │   └── group_vars/
-│   └── staging/
-│       ├── hosts.ini
-│       └── group_vars/
-├── playbooks/
-│   ├── bootstrap.yml
-│   ├── docker.yml
-│   ├── caddy.yml
-│   └── wordpress.yml
-├── roles/
-│   ├── common/
-│   ├── ssh_hardening/
-│   ├── firewall/
-│   ├── docker/
-│   ├── caddy/
-│   └── wordpress_site/
-└── README.md
+Automated WordPress multi-site platform
+
+    Proxmox VMs provisioned via Cloud-Init
+    Docker-based application isolation
+    Caddy reverse proxy with dynamic routing
+    Ansible-driven idempotent infrastructure
+    Multi-environment (prod/staging) support
