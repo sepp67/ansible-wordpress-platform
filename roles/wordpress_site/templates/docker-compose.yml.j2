@@ -4,10 +4,10 @@ services:
     container_name: db_{{ item.name }}
     restart: unless-stopped
     environment:
-      MARIADB_DATABASE: "{{ item.db_name }}"
+      MARIADB_DATABASE: "{{ vault_wordpress_db_passwords[item.name].db_password }}"
       MARIADB_USER: "{{ item.db_user }}"
       MARIADB_PASSWORD: "{{ item.db_password }}"
-      MARIADB_ROOT_PASSWORD: "{{ item.db_root_password }}"
+      MARIADB_ROOT_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_root_password }}"
     volumes:
       - db_{{ item.name }}:/var/lib/mysql
     networks:
@@ -21,7 +21,7 @@ services:
       WORDPRESS_DB_HOST: "db_{{ item.name }}:3306"
       WORDPRESS_DB_NAME: "{{ item.db_name }}"
       WORDPRESS_DB_USER: "{{ item.db_user }}"
-      WORDPRESS_DB_PASSWORD: "{{ item.db_password }}"
+      WORDPRESS_DB_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_password }}"
     volumes:
       - wp_{{ item.name }}:/var/www/html
     depends_on:
