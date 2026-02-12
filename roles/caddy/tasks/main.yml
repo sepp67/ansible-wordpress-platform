@@ -1,0 +1,40 @@
+---
+- name: Create directory for Caddy
+  file:
+    path: /opt/caddy
+    state: directory
+    mode: "0755"
+
+- name: Create Caddyfile
+  copy:
+    dest: /opt/caddy/Caddyfile
+    content: |
+      :80 {
+          respond "Caddy is running"
+      }
+
+- name: Create docker-compose.yml for Caddy
+  copy:
+    dest: /opt/caddy/docker-compose.yml
+    content: |
+      services:
+        caddy:
+          image: caddy:2
+          container_name: caddy
+          restart: unless-stopped
+          ports:
+            - "80:80"
+            - "443:443"
+          volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile
+            - caddy_data:/data
+            - caddy_config:/config
+
+      volumes:
+        caddy_data:
+        caddy_config:
+
+- name: Start Caddy container
+  command: docker compose up -d
+  args:
+    chdir: /opt/caddy
