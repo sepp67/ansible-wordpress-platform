@@ -6,7 +6,7 @@ services:
     environment:
       MARIADB_DATABASE: "{{ vault_wordpress_db_passwords[item.name].db_password }}"
       MARIADB_USER: "{{ item.db_user }}"
-      MARIADB_PASSWORD: "{{ item.db_password }}"
+      MARIADB_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_password }}"
       MARIADB_ROOT_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_root_password }}"
     volumes:
       - db_{{ item.name }}:/var/lib/mysql
