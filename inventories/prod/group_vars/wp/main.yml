@@ -3,12 +3,7 @@ wordpress_sites:
     domain: site1.local
     db_name: wp_site1
     db_user: wp_site1
-    db_password: "CHANGEME_site1"
-    db_root_password: "CHANGEME_root1"
-
   - name: site2
     domain: site2.local
     db_name: wp_site2
     db_user: wp_site2
-    db_password: "CHANGEME_site2"
-    db_root_password: "CHANGEME_root2"
