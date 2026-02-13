@@ -2,8 +2,6 @@
 - name: Deploy WordPress sites and configure Caddy routing
   hosts: wp
   become: true
-  vars_files:
-  - inventories/prod/group_vars/wp_vault.yml
   roles:
     - wordpress_site
     - caddy
