@@ -1,4 +1,23 @@
 ---
+# roles/caddy/tasks/main.yml
+
+- name: Stop and remove Caddy (destroy mode)
+  command: docker compose down -v --remove-orphans
+  args:
+    chdir: /opt/caddy
+  ignore_errors: true
+  when: destroy | default(false)
+
+- name: Remove /opt/caddy (destroy mode)
+  file:
+    path: /opt/caddy
+    state: absent
+  when: destroy | default(false)
+
+- name: End play in destroy mode
+  meta: end_play
+  when: destroy | default(false)
+
 - name: Create directory for Caddy
   file:
     path: /opt/caddy
@@ -54,10 +73,3 @@
   command: docker compose up -d
   args:
     chdir: /opt/caddy
-
-- name: Stop and remove Caddy
-  command: docker compose down -v
-  args:
-    chdir: /opt/caddy
-  ignore_errors: true
-  when: destroy | default(false)

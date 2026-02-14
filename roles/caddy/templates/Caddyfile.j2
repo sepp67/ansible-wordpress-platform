@@ -4,6 +4,11 @@
   reverse_proxy wp_{{ s.name }}:80
 }
 {% endfor %}
+
+
+:80 {
+  respond "No matching vhost"
+}
 {% else %}
 :80 {
   respond "Caddy is running"
