@@ -8,6 +8,11 @@ services:
       MARIADB_USER: "{{ item.db_user }}"
       MARIADB_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_password }}"
       MARIADB_ROOT_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_root_password }}"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     volumes:
       - db_{{ item.name }}:/var/lib/mysql
     networks:
@@ -15,6 +20,9 @@ services:
 
   wp_{{ item.name }}:
     image: wordpress:6-php8.3-apache
+    depends_on:
+      db:
+        condition: service_healthy
     container_name: wp_{{ item.name }}
     restart: unless-stopped
     environment:

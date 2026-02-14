@@ -31,6 +31,22 @@
 
 - name: Start each WordPress stack
   command: docker compose up -d
+- name: Wait for DB to be ready (TCP 3306)
+  wait_for:
+    host: "127.0.0.1"
+    port: 3306
+    delay: 3
+    timeout: 90
+  delegate_to: "{{ inventory_hostname }}"
+  when: false  # on évite ça si DB n’est pas publiée en host; voir note ci-dessous
   args:
     chdir: "/opt/wordpress/{{ item.name }}"
   loop: "{{ wordpress_sites }}"
+
+- name: Stop and remove WordPress stack
+  command: docker compose down -v
+  args:
+    chdir: "/opt/wordpress/{{ item.name }}"
+  loop: "{{ wordpress_sites }}"
+  ignore_errors: true
+  when: destroy | default(false)
