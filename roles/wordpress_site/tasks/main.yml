@@ -1,4 +1,6 @@
 ---
+# roles/wordpress_site/tasks/main.yml
+
 - name: Ensure shared docker network 'web' exists
   command: docker network inspect web
   register: webnet
@@ -9,6 +11,31 @@
   command: docker network create web
   when: webnet.rc != 0
 
+# ----------------------------
+# DESTROY MODE (run first)
+# ----------------------------
+- name: Stop and remove WordPress stacks (destroy mode)
+  command: docker compose down -v --remove-orphans
+  args:
+    chdir: "/opt/wordpress/{{ item.name }}"
+  loop: "{{ wordpress_sites }}"
+  ignore_errors: true
+  when: destroy | default(false)
+
+- name: Remove site directories (destroy mode)
+  file:
+    path: "/opt/wordpress/{{ item.name }}"
+    state: absent
+  loop: "{{ wordpress_sites }}"
+  when: destroy | default(false)
+
+- name: End play in destroy mode
+  meta: end_play
+  when: destroy | default(false)
+
+# ----------------------------
+# DEPLOY MODE
+# ----------------------------
 - name: Ensure base directory exists
   file:
     path: /opt/wordpress
@@ -31,22 +58,16 @@
 
 - name: Start each WordPress stack
   command: docker compose up -d
-- name: Wait for DB to be ready (TCP 3306)
-  wait_for:
-    host: "127.0.0.1"
-    port: 3306
-    delay: 3
-    timeout: 90
-  delegate_to: "{{ inventory_hostname }}"
-  when: false  # on évite ça si DB n’est pas publiée en host; voir note ci-dessous
   args:
     chdir: "/opt/wordpress/{{ item.name }}"
   loop: "{{ wordpress_sites }}"
 
-- name: Stop and remove WordPress stack
-  command: docker compose down -v
-  args:
-    chdir: "/opt/wordpress/{{ item.name }}"
+# Wait for DB container to be healthy (requires healthcheck in compose + container_name db_{{ item.name }})
+- name: Wait for DB healthcheck to be healthy
+  command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' db_{{ item.name }}
+  register: db_health
+  until: db_health.stdout.strip() == "healthy"
+  retries: 30
+  delay: 3
+  changed_when: false
   loop: "{{ wordpress_sites }}"
-  ignore_errors: true
-  when: destroy | default(false)
