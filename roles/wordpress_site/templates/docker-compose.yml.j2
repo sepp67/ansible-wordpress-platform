@@ -4,7 +4,7 @@ services:
     container_name: db_{{ item.name }}
     restart: unless-stopped
     environment:
-      MARIADB_DATABASE: "{{ vault_wordpress_db_passwords[item.name].db_password }}"
+      MARIADB_DATABASE: "{{ item.db_name }}"
       MARIADB_USER: "{{ item.db_user }}"
       MARIADB_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_password }}"
       MARIADB_ROOT_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_root_password }}"
@@ -20,11 +20,11 @@ services:
 
   wp_{{ item.name }}:
     image: wordpress:6-php8.3-apache
-    depends_on:
-      db:
-        condition: service_healthy
     container_name: wp_{{ item.name }}
     restart: unless-stopped
+    depends_on:
+      db_{{ item.name }}:
+        condition: service_healthy
     environment:
       WORDPRESS_DB_HOST: "db_{{ item.name }}:3306"
       WORDPRESS_DB_NAME: "{{ item.db_name }}"
@@ -32,8 +32,6 @@ services:
       WORDPRESS_DB_PASSWORD: "{{ vault_wordpress_db_passwords[item.name].db_password }}"
     volumes:
       - wp_{{ item.name }}:/var/www/html
-    depends_on:
-      - db_{{ item.name }}
     networks:
       - web
 
