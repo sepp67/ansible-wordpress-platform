@@ -1,0 +1,59 @@
+---
+- name: Destroy WordPress stacks and Caddy (containers, volumes, configs)
+  hosts: wp
+  become: true
+
+  tasks:
+    # ----------------------------
+    # WordPress stacks
+    # ----------------------------
+    - name: Check if /opt/wordpress exists
+      stat:
+        path: /opt/wordpress
+      register: wp_root
+
+    - name: Stop WordPress stacks (best-effort)
+      shell: |
+        set -e
+        for d in /opt/wordpress/*; do
+          if [ -d "$d" ] && [ -f "$d/docker-compose.yml" ]; then
+            (cd "$d" && docker compose down -v --remove-orphans) || true
+          fi
+        done
+      args:
+        executable: /bin/bash
+      when: wp_root.stat.exists
+      changed_when: false
+
+    - name: Remove WordPress directories
+      file:
+        path: /opt/wordpress
+        state: absent
+
+    # ----------------------------
+    # Caddy stack
+    # ----------------------------
+    - name: Check if /opt/caddy exists
+      stat:
+        path: /opt/caddy
+      register: caddy_root
+
+    - name: Stop Caddy (best-effort)
+      command: docker compose down -v --remove-orphans
+      args:
+        chdir: /opt/caddy
+      when: caddy_root.stat.exists
+      failed_when: false
+      changed_when: false
+
+    - name: Remove Caddy directory
+      file:
+        path: /opt/caddy
+        state: absent
+
+    # ----------------------------
+    # Optional cleanup (safe)
+    # ----------------------------
+    - name: Prune dangling Docker resources (optional)
+      command: docker system prune -f
+      changed_when: false
