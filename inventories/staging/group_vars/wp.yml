@@ -1,5 +1,0 @@
-wordpress_sites:
-  - name: site1
-    domain: site1-staging.local
-    db_name: wp_site1
-    db_user: wp_site1
